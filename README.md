@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Nu primesc notă pentru că nu am pus titlu și descriere
 
 ### Folosiți template-ul corespunzător grupei voastre!
@@ -131,3 +132,6 @@ conțin fișiere generate și nu ne ajută să le versionăm.
 ## Resurse
 
 - adăugați trimiteri către resursele externe care v-au ajutat sau pe care le-ați folosit
+=======
+# OOP-Project
+>>>>>>> 915830ff160292f573c90f377f48198f4b6372dc
