@@ -1,57 +1,80 @@
 #include <iostream>
-#include <array>
+#include <vector>
+#include <string>
+#include <memory>
 
-#include <Helper.h>
+#include "Coordonate.h"
+#include "Strada.h"
+#include "Intersectie.h"
+#include "Semafor.h"
+#include "Utils.h"
+#include "Vehicul.h"
+
 
 int main() {
-    std::cout << "Hello, world!\n";
-    std::array<int, 100> v{};
-    int nr;
-    std::cout << "Introduceți nr: ";
-    /////////////////////////////////////////////////////////////////////////
-    /// Observație: dacă aveți nevoie să citiți date de intrare de la tastatură,
-    /// dați exemple de date de intrare folosind fișierul tastatura.txt
-    /// Trebuie să aveți în fișierul tastatura.txt suficiente date de intrare
-    /// (în formatul impus de voi) astfel încât execuția programului să se încheie.
-    /// De asemenea, trebuie să adăugați în acest fișier date de intrare
-    /// pentru cât mai multe ramuri de execuție.
-    /// Dorim să facem acest lucru pentru a automatiza testarea codului, fără să
-    /// mai pierdem timp de fiecare dată să introducem de la zero aceleași date de intrare.
-    ///
-    /// Pe GitHub Actions (bife), fișierul tastatura.txt este folosit
-    /// pentru a simula date introduse de la tastatură.
-    /// Bifele verifică dacă programul are erori de compilare, erori de memorie și memory leaks.
-    ///
-    /// Dacă nu puneți în tastatura.txt suficiente date de intrare, îmi rezerv dreptul să vă
-    /// testez codul cu ce date de intrare am chef și să nu pun notă dacă găsesc vreun bug.
-    /// Impun această cerință ca să învățați să faceți un demo și să arătați părțile din
-    /// program care merg (și să le evitați pe cele care nu merg).
-    ///
-    /////////////////////////////////////////////////////////////////////////
-    std::cin >> nr;
-    /////////////////////////////////////////////////////////////////////////
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "v[" << i << "] = ";
-        std::cin >> v[i];
+    //const int MAX_LENGTH = 1000;
+    //const int MAX_WIDTH = 1000;
+    const int distantaSincronizare = 130;
+
+    // crearea strazilor
+    std::vector <std::shared_ptr<Strada>> strazi;
+    std::vector <std::shared_ptr<Intersectie>> intersectii;
+    std::vector <std::shared_ptr<Semafor>> semafoare;
+
+    Coordonate coord1{10, 20};
+    std::vector<std::pair<Coordonate, int>> limitari1 = {
+        {Coordonate{5, 20}, 50},
+        {Coordonate{10, 20}, 40},
+        {Coordonate{15, 20}, 30}
+    };
+
+    auto Strada1 = std::make_shared<Strada>(1, "Strada Mare", coord1, Orientare::Verticala, limitari1);
+    strazi.push_back(Strada1);
+
+    Coordonate coord2{10, 25};
+    std::vector<std::pair<Coordonate, int>> limitari2 = {
+        {Coordonate{10, 25}, 50},
+        {Coordonate{10, 26}, 50},
+        {Coordonate{10, 27}, 30}
+    };
+
+    auto Strada2 = std::make_shared<Strada>(2, "Strada Mică", coord2, Orientare::Orizontala, limitari2);
+    strazi.push_back(Strada2);
+
+    // crearea intersectiilor si a semafoarelor
+    for (size_t i=0; i < strazi.size(); ++i) {
+        for (size_t j=i+1; j < strazi.size(); ++j) {
+            auto strada1 = strazi[i];
+            auto strada2 = strazi[j];
+
+            if (seIntersecteaza (strada1, strada2)) {
+                Coordonate coordIntersectie = calculeazaIntersectie(strada1, strada2);
+
+                std::shared_ptr<Intersectie> intersectie;
+                if (strada1->get_OrientareStrada() == Orientare::Verticala)
+                    intersectie = std::make_shared<Intersectie>(coordIntersectie, strada1, strada2);
+                else
+                    intersectie = std::make_shared<Intersectie>(coordIntersectie, strada2, strada1);
+                std::shared_ptr<Semafor> semafor1 = std::make_shared<Semafor>(0, 0, 0, coordIntersectie, strada1);
+                std::shared_ptr<Semafor> semafor2 = std::make_shared<Semafor>(0, 0, 0, coordIntersectie, strada2);
+
+
+                // Adaugă intersecția și semaforul în unordered_map
+                strada1->adaugaIntersectie(coordIntersectie, intersectie);
+                strada2->adaugaIntersectie(coordIntersectie, intersectie);
+                strada1->adaugaSemafor(coordIntersectie, semafor1);
+                strada2->adaugaSemafor(coordIntersectie, semafor2);
+
+                intersectii.push_back(intersectie);
+                semafoare.push_back(semafor1);
+                semafoare.push_back(semafor2);
+            }
+        }
     }
-    std::cout << "\n\n";
-    std::cout << "Am citit de la tastatură " << nr << " elemente:\n";
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "- " << v[i] << "\n";
-    }
-    ///////////////////////////////////////////////////////////////////////////
-    /// Pentru date citite din fișier, NU folosiți tastatura.txt. Creați-vă voi
-    /// alt fișier propriu cu ce alt nume doriți.
-    /// Exemplu:
-    /// std::ifstream fis("date.txt");
-    /// for(int i = 0; i < nr2; ++i)
-    ///     fis >> v2[i];
-    ///
-    ///////////////////////////////////////////////////////////////////////////
-    ///                Exemplu de utilizare cod generat                     ///
-    ///////////////////////////////////////////////////////////////////////////
-    Helper helper;
-    helper.help();
-    ///////////////////////////////////////////////////////////////////////////
+
+    // stabilirea semafoarelor
+    stabilesteSemafoare (strazi, distantaSincronizare);
     return 0;
 }
+
+

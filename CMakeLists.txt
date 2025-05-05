@@ -5,11 +5,7 @@ cmake_minimum_required(VERSION 3.26)
 set(MAIN_PROJECT_NAME "oop")
 set(MAIN_EXECUTABLE_NAME "${MAIN_PROJECT_NAME}")
 
-
 project(${MAIN_PROJECT_NAME})
-# set(CMAKE_PROJECT_VERSION_MAJOR 0)
-# set(CMAKE_PROJECT_VERSION_MINOR 0)
-# set(CMAKE_PROJECT_VERSION_PATCH 1)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,9 +15,13 @@ include(cmake/Options.cmake)
 include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
 
-###############################################################################
+# Set SFML path if it is not installed globally
+set(SFML_DIR "C:/Libraries/SFML-2.5.1/lib/cmake/SFML") # Set path to your SFML folder if it's not installed globally
 
-# external dependencies with FetchContent
+# Find SFML package (Graphics, Window, and System are the basic modules required for graphics applications)
+find_package(SFML 2.5.1 REQUIRED graphics window system)
+
+# External dependencies with FetchContent
 # include(FetchContent)
 #
 # set(FETCHCONTENT_QUIET OFF)
@@ -39,39 +39,36 @@ include(cmake/CopyHelper.cmake)
 #
 # FetchContent_MakeAvailable(SomeLib)
 
-###############################################################################
-
-# external dependencies with find_package
+# External dependencies with find_package
 
 # find_package(Threads REQUIRED)
 
-###############################################################################
-
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
-    main.cpp
-    generated/src/Helper.cpp
+        main.cpp
+        generated/src/Helper.cpp
+        generated/src/Coordonate.cpp
+        generated/src/Strada.cpp
+        generated/src/Intersectie.cpp
+        generated/src/Semafor.cpp
+        generated/src/Utils.cpp
+        generated/src/Vehicul.cpp
 )
 
-# NOTE: Add all defined targets (e.g. executables, libraries, etc. )
-# NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
+# Link SFML libraries to the project
+target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system)
+
+# Set compiler flags (e.g., enabling sanitizers)
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
-# set_compiler_flags(TARGET_NAMES ${MAIN_EXECUTABLE_NAME} ${FOO} ${BAR})
-# where ${FOO} and ${BAR} represent additional executables or libraries
-# you want to compile with the set compiler flags
 
-###############################################################################
-
-# use SYSTEM so cppcheck and clang-tidy do not report warnings from these directories
+# Use SYSTEM so cppcheck and clang-tidy do not report warnings from these directories
 target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE generated/include)
 # target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ext/<SomeHppLib>/include)
 # target_include_directories(${MAIN_EXECUTABLE_NAME} SYSTEM PRIVATE ${<SomeLib>_SOURCE_DIR}/include)
 # target_link_directories(${MAIN_EXECUTABLE_NAME} PRIVATE ${<SomeLib>_BINARY_DIR}/lib)
 # target_link_libraries(${MAIN_EXECUTABLE_NAME} <SomeLib>)
 
-###############################################################################
-
-# copy binaries to "bin" folder; these are uploaded as artifacts on each release
+# Copy binaries to "bin" folder; these are uploaded as artifacts on each release
 # DESTINATION_DIR is set as "bin" in cmake/Options.cmake:6
 install(TARGETS ${MAIN_EXECUTABLE_NAME} DESTINATION ${DESTINATION_DIR})
 if(APPLE)
@@ -81,3 +78,4 @@ endif()
 copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(FILES tastatura.txt config.json DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
 # copy_files(DIRECTORY images sounds COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE_NAME})
+
