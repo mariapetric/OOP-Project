@@ -16,10 +16,10 @@ include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
 
 # Set SFML path if it is not installed globally
-set(SFML_DIR "C:/Libraries/SFML-2.5.1/lib/cmake/SFML") # Set path to your SFML folder if it's not installed globally
+#set(SFML_DIR "C:/Libraries/SFML-2.5.1/lib/cmake/SFML") # Set path to your SFML folder if it's not installed globally
 
 # Find SFML package (Graphics, Window, and System are the basic modules required for graphics applications)
-find_package(SFML 2.5.1 REQUIRED graphics window system)
+#find_package(SFML 2.5.1 REQUIRED graphics window system)
 
 # External dependencies with FetchContent
 # include(FetchContent)
@@ -58,7 +58,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
 )
 
 # Link SFML libraries to the project
-target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system)
+#target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system)
 
 # Set compiler flags (e.g., enabling sanitizers)
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
