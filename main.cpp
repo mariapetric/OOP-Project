@@ -12,8 +12,8 @@
 #include "Simulator.h"
 
 int main() {
-    const int MAX_LENGTH = 1000;
-    const int MAX_WIDTH = 1000;
+    // const int MAX_LENGTH = 1000;
+    // const int MAX_WIDTH = 1000;
     const int distantaSincronizare = 130;
 
     // crearea strazilor
