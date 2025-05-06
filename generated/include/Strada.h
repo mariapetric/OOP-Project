@@ -10,6 +10,7 @@
 #include "Directie.h"
 #include "Coordonate.h"
 #include "Sens.h"
+#include "TrafficSimulationException.h"
 
 class Vehicul;
 

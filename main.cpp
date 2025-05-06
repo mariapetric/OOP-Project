@@ -9,11 +9,11 @@
 #include "Semafor.h"
 #include "Utils.h"
 #include "Vehicul.h"
-
+#include "Simulator.h"
 
 int main() {
-    //const int MAX_LENGTH = 1000;
-    //const int MAX_WIDTH = 1000;
+    const int MAX_LENGTH = 1000;
+    const int MAX_WIDTH = 1000;
     const int distantaSincronizare = 130;
 
     // crearea strazilor
@@ -21,24 +21,24 @@ int main() {
     std::vector <std::shared_ptr<Intersectie>> intersectii;
     std::vector <std::shared_ptr<Semafor>> semafoare;
 
-    Coordonate coord1{10, 20};
+    Coordonate coord1{10, 0};
     std::vector<std::pair<Coordonate, int>> limitari1 = {
-        {Coordonate{5, 20}, 50},
-        {Coordonate{10, 20}, 40},
-        {Coordonate{15, 20}, 30}
+        {Coordonate{10, 5}, 50},
+        {Coordonate{10, 100}, 40},
+        {Coordonate{10, 555}, 30}
     };
 
-    auto Strada1 = std::make_shared<Strada>(1, "Strada Mare", coord1, Orientare::Verticala, limitari1);
+    auto Strada1 = std::make_shared<Strada>(1, "Strada Mare", coord1, Orientare::Orizontala, limitari1);
     strazi.push_back(Strada1);
 
-    Coordonate coord2{10, 25};
+    Coordonate coord2{0, 250};
     std::vector<std::pair<Coordonate, int>> limitari2 = {
-        {Coordonate{10, 25}, 50},
-        {Coordonate{10, 26}, 50},
-        {Coordonate{10, 27}, 30}
+        {Coordonate{25, 250}, 50},
+        {Coordonate{260, 250}, 50},
+        {Coordonate{700, 250}, 30}
     };
 
-    auto Strada2 = std::make_shared<Strada>(2, "Strada Mică", coord2, Orientare::Orizontala, limitari2);
+    auto Strada2 = std::make_shared<Strada>(2, "Strada Mică", coord2, Orientare::Verticala, limitari2);
     strazi.push_back(Strada2);
 
     // crearea intersectiilor si a semafoarelor
@@ -74,6 +74,8 @@ int main() {
 
     // stabilirea semafoarelor
     stabilesteSemafoare (strazi, distantaSincronizare);
+
+    //
     return 0;
 }
 

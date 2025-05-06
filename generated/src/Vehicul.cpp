@@ -1,7 +1,17 @@
 #include "Vehicul.h"
 
 Vehicul::Vehicul(int id_, const Coordonate& pozitieVehicul_, Sens sensVehicul_, Sens orientareViitoare_, std::shared_ptr<Strada> strada_) :
-        id{id_}, viteza{50}, pozitieVehicul{pozitieVehicul_}, sensVehicul{sensVehicul_}, orientareViitoare{orientareViitoare_}, strada{strada_} {}
+    id{id_}, viteza{50}, pozitieVehicul{pozitieVehicul_}, sensVehicul{sensVehicul_}, orientareViitoare{orientareViitoare_}, strada{strada_} {
+
+    if (!strada) {
+        throw InvalidStartPositionException("Vehiculul nu poate fi plasat pe o strada invalidă.");
+    }
+
+    if (pozitieVehicul_.get_x() < 0 || pozitieVehicul_.get_x() > MAX_LENGTH || pozitieVehicul_.get_y() < 0 || pozitieVehicul_.get_y() > MAX_WIDTH) {
+        throw InvalidStartPositionException("Pozitia vehiculului este invalida: in afara limitelor ecranului..");
+    }
+}
+
 
 Vehicul::Vehicul(const Vehicul& other) : id{other.id}, viteza{other.viteza}, pozitieVehicul{other.pozitieVehicul},
                                           sensVehicul{other.sensVehicul}, orientareViitoare{other.orientareViitoare}, strada{other.strada} {}

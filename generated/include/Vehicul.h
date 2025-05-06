@@ -9,7 +9,10 @@
 #include "Coordonate.h"
 #include "Strada.h"
 #include "Sens.h"
+#include "TrafficSimulationException.h"
 
+const int MAX_LENGTH = 1000;
+const int MAX_WIDTH = 1000;
 
 class Vehicul {
 

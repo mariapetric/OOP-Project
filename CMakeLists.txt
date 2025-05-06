@@ -53,6 +53,8 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         generated/src/Semafor.cpp
         generated/src/Utils.cpp
         generated/src/Vehicul.cpp
+        generated/src/Simulator.cpp
+        generated/src/TrafficSimulationException.cpp
 )
 
 # Link SFML libraries to the project

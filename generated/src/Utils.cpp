@@ -78,14 +78,14 @@ void seteazaSemafoarePeStrada (const std::shared_ptr<Strada> strada, const Culoa
 void stabilesteSemafoare(std::vector<std::shared_ptr<Strada>>& strazi, int distantaSincronizare) {
     std::queue<std::shared_ptr<Strada>> coada;
     std::unordered_set<int> straziProcesate;  // sa nu iau aceeasi strada de mai multe ori
-    std::unordered_map<int, Culoare> semafoarePeStrada;  // memorează culoarea semaforului pentru fiecare stradă
+    std::unordered_map<int, Culoare> semafoarePeStrada;
 
     // ia un semafor random pentru a începe
     auto stradaStart = strazi[0];
     coada.push(stradaStart);
     straziProcesate.insert(stradaStart->get_Id());
 
-    // Inițial punem semaforul pe rosu
+    // punem semaforul pe rosu
     semafoarePeStrada[stradaStart->get_Id()] = Culoare::Rosu;
     seteazaSemafoarePeStrada(stradaStart, Culoare::Rosu, distantaSincronizare);
 
@@ -97,19 +97,15 @@ void stabilesteSemafoare(std::vector<std::shared_ptr<Strada>>& strazi, int dista
         for (auto& [coord, intersectie] : stradaCurenta->get_IntersectiiOrdonate()) {
             auto stradaVecina = intersectie->get_CealaltaStrada(stradaCurenta);
 
-            // Verificăm dacă strada vecină a fost deja procesată
             if (straziProcesate.find(stradaVecina->get_Id()) == straziProcesate.end()) {
-                // Obținem culoarea semaforului pe strada curentă la intersecție
+
                 auto semaforCurent = stradaCurenta->get_SemaforLaCoord(coord);
                 Culoare culoareOpusa = culoare_opusa(semaforCurent->get_Culoare());
 
-                // Setăm culoarea semaforului pe strada vecină
                 semafoarePeStrada[stradaVecina->get_Id()] = culoareOpusa;
 
-                // Stabilim semafoarele pe strada vecină
                 seteazaSemafoarePeStrada(stradaVecina, culoareOpusa, distantaSincronizare);
 
-                // Adăugăm strada vecină în coadă pentru a o procesa mai târziu
                 coada.push(stradaVecina);
                 straziProcesate.insert(stradaVecina->get_Id());
             }

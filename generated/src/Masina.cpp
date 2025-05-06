@@ -61,6 +61,7 @@ void Masina::ruleaza(const std::vector<std::shared_ptr<Vehicul>>& vehicule, int 
         // alege aleator noua directie
         Sens directieNoua = alegeDirectieRandom(sensVehicul);
 
+
         set_orientareViitoare(directieNoua);
         schimbaSensul(directieNoua);
 

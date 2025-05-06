@@ -2,11 +2,23 @@
 #include "Strada.h"
 #include "Utils.h"
 
-Strada::Strada (int id_, const std::string& nume_,
-                  const Coordonate& coord_, Orientare orientare_,
-                  const std::vector < std::pair<Coordonate, int> >& limitari) :
-                    id{id_}, nume{nume_}, CoordonataStart{coord_},
-                    OrientareStrada{orientare_}, intersectii {}, semafoare{}, LimitariViteza{limitari} {}
+Strada::Strada(int id_, const std::string& nume_,
+               const Coordonate& coord_, Orientare orientare_,
+               const std::vector<std::pair<Coordonate, int>>& limitari) :
+               id{id_}, nume{nume_}, CoordonataStart{coord_},
+               OrientareStrada{orientare_}, intersectii{}, semafoare{}, LimitariViteza{limitari} {
+
+  if (coord_.get_x() < 0 || coord_.get_x() > MAX_LENGTH || coord_.get_y() < 0 || coord_.get_y() > MAX_WIDTH) {
+    throw InvalidStartPositionException("Coordonatele străzii sunt invalide, în afara limitelor ecranului.");
+  }
+
+  for (const auto& limitare : limitari) {
+    if (limitare.second < 0) {
+      throw VehicleMovementException("Limita de viteză nu poate fi negativă.");
+    }
+  }
+}
+
 
 Strada::Strada (const Strada& other) : id{other.id}, nume{other.nume},
                                       CoordonataStart{other.CoordonataStart}, OrientareStrada{other.OrientareStrada},
