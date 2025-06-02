@@ -6,7 +6,7 @@
 #include "Strada.h"
 #include "Semafor.h"
 
-Semafor::Semafor (double timpVerdeRamas_, double timpGalbenRamas_, double timpRosuRamas_, const Coordonate& coordonateSemafor_, std::shared_ptr<Strada> strada) :
+Semafor::Semafor (double timpVerdeRamas_, double timpGalbenRamas_, double timpRosuRamas_, const Coordonate<int>& coordonateSemafor_, std::shared_ptr<Strada> strada) :
                 timpVerdeRamas{timpVerdeRamas_}, timpGalbenRamas{timpGalbenRamas_}, timpRosuRamas{timpRosuRamas_},
                 coordonateSemafor{coordonateSemafor_}, strada{strada} {}
 
@@ -25,7 +25,7 @@ std::ostream& operator<< (std::ostream& os, const Semafor& obj) {
     return os;
 }
 
-Coordonate Semafor::get_Coordonate() const {
+Coordonate<int> Semafor::get_Coordonate() const {
     return coordonateSemafor;
 }
 
@@ -62,7 +62,28 @@ void Semafor::set_Culoare(Culoare culoare) {
     }
 }
 
+void Semafor::update(double deltaTimp) {
+    if (timpVerdeRamas > 0) {
+        timpVerdeRamas -= deltaTimp;
+        if (timpVerdeRamas <= 0) {
+            set_Culoare(Culoare::Galben);
+        }
+    } else if (timpGalbenRamas > 0) {
+        timpGalbenRamas -= deltaTimp;
+        if (timpGalbenRamas <= 0) {
+            set_Culoare(Culoare::Rosu);
+        }
+    } else if (timpRosuRamas > 0) {
+        timpRosuRamas -= deltaTimp;
+        if (timpRosuRamas <= 0) {
+            set_Culoare(Culoare::Verde);
+        }
+    }
+}
 
+std::shared_ptr<Strada> Semafor::getStrada() const {
+    return strada.lock(); // întoarce un shared_ptr (poate fi nullptr dacă obiectul a fost distrus)
+}
 
 
 

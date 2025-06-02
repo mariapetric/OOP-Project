@@ -22,7 +22,7 @@ bool seIntersecteaza (const std::shared_ptr<Strada>& strada1, const std::shared_
     return false;
 }
 
-Coordonate calculeazaIntersectie (const std::shared_ptr<Strada>& strada1, const std::shared_ptr<Strada>& strada2) {
+Coordonate<int> calculeazaIntersectie (const std::shared_ptr<Strada>& strada1, const std::shared_ptr<Strada>& strada2) {
     int x=-1, y=-1;
     if (strada1->get_OrientareStrada() == Orientare::Verticala && strada2->get_OrientareStrada() == Orientare::Orizontala) {
         x = strada1->get_CoordonataStart().get_x();
@@ -50,7 +50,7 @@ Culoare culoare_opusa(Culoare culoareCurenta) {
 
 }
 
-int distanta(const Coordonate& coord1, const Coordonate& coord2) {
+int distanta(const Coordonate<int>& coord1, const Coordonate<int>& coord2) {
     return std::abs(coord1.get_x() - coord2.get_x()) + std::abs(coord1.get_y() - coord2.get_y());
 }
 
@@ -59,7 +59,7 @@ void seteazaSemafoarePeStrada (const std::shared_ptr<Strada> strada, const Culoa
     auto intersectii = strada->get_IntersectiiOrdonate();
 
     Culoare culoareCurenta = culoareInitiala;
-    Coordonate ultimaPoz;
+    Coordonate<int> ultimaPoz;
 
     for (size_t i = 0; i < intersectii.size(); ++i) {
         auto& [coord, intersectie] = intersectii[i];
@@ -149,7 +149,7 @@ Sens alegeDirectieRandom(Sens curent) {
     return curent;
 }
 
-bool existaVehiculPrioritarAproape (const Coordonate& poz, const std::vector<std::shared_ptr<Vehicul>>& vehicule) {
+bool existaVehiculPrioritarAproape (const Coordonate<int>& poz, const std::vector<std::shared_ptr<Vehicul>>& vehicule) {
     for (const auto& v : vehicule) {
         if (auto vp = std::dynamic_pointer_cast<VehiculPrioritar>(v)) {
             if (distanta (poz, vp->get_PozitieVehicul() ) < 10) {
@@ -161,45 +161,95 @@ bool existaVehiculPrioritarAproape (const Coordonate& poz, const std::vector<std
 }
 
 
-bool vehiculInFata(const Vehicul& vehicul, const std::vector<std::shared_ptr<Vehicul>>& vehicule) {
+bool vehiculInFata(
+    const Vehicul& vehicul,
+    const std::vector<std::shared_ptr<Vehicul>>& vehicule, float deltaSecunde
+) {
     const auto& pozCurenta = vehicul.get_PozitieVehicul();
     auto sens = vehicul.get_Sens();
     auto idStrada = vehicul.get_Strada()->get_Id();
 
+    // Prag minim de „detectie” (cel puţin 1)
+    float dxPerFrame = static_cast<float>(vehicul.get_Viteza()) * deltaSecunde * 25.0f;
+    int pragDetectie = static_cast<int>(std::round(dxPerFrame));
+    if (pragDetectie < 1)
+        pragDetectie = 1;   // măcar un pixel minim
+
+
     for (const auto& v : vehicule) {
-        if (v->get_Id() == vehicul.get_Id()) continue;
-        if (v->get_Strada()->get_Id() != idStrada) continue;
-        if (v->get_Sens() != sens) continue;
+        if (v->get_Id() == vehicul.get_Id())
+            continue;
+        if (v->get_Strada()->get_Id() != idStrada)
+            continue;
+        if (v->get_Sens() != sens)
+            continue;
 
         const auto& pozV = v->get_PozitieVehicul();
-        int dist = 0;
+        int dist = -1;
 
         switch (sens) {
             case Sens::Sus:
-                if (pozV.get_y() > pozCurenta.get_y() )
-                    dist = pozV.get_y() - pozCurenta.get_y();
-            break;
-            case Sens::Jos:
-                if (pozV.get_y() < pozCurenta.get_y() )
+                if (pozV.get_x() == pozCurenta.get_x() &&
+                    pozV.get_y() <= pozCurenta.get_y())
+                {
                     dist = pozCurenta.get_y() - pozV.get_y();
-            break;
+                }
+                break;
+
+            case Sens::Jos:
+                if (pozV.get_x() == pozCurenta.get_x() &&
+                    pozV.get_y() >= pozCurenta.get_y())
+                {
+                    dist = pozV.get_y() - pozCurenta.get_y();
+                }
+                break;
+
             case Sens::Stanga:
-                if (pozV.get_x() < pozCurenta.get_x() )
+                if (pozV.get_y() == pozCurenta.get_y() &&
+                    pozV.get_x() <= pozCurenta.get_x())
+                {
                     dist = pozCurenta.get_x() - pozV.get_x();
-            break;
+                }
+                break;
+
             case Sens::Dreapta:
-                if (pozV.get_x() > pozCurenta.get_x() )
+                if (pozV.get_y() == pozCurenta.get_y() &&
+                    pozV.get_x() >= pozCurenta.get_x())
+                {
                     dist = pozV.get_x() - pozCurenta.get_x();
-            break;
+                }
+                break;
         }
-        if (dist > 0 && dist <= 1) {
-            //verifica sa nu fie un autobuz oprit in statie
-            if (std::dynamic_pointer_cast<Autobuz>(v) && v->eOpritInStatie() )
-                continue;
+
+        if (dist < 0)
+            continue;
+
+        // Dacă v[i] e exact în spatele/din faţă (dist == 0),
+        // îl considerăm blocant doar dacă are ID mai mic decât vehiculul curent.
+        bool acelasiLocSiIDmaiMic = (dist == 0 && v->get_Id() < vehicul.get_Id());
+
+        if ((dist > 0 && dist <= pragDetectie) || acelasiLocSiIDmaiMic) {
+            // dacă e autobuz oprit în stație chiar pe locul respectiv,
+            // atunci îl ignorăm
+            if (auto autob = std::dynamic_pointer_cast<Autobuz>(v)) {
+                if (autob->eOpritInStatie())
+                    continue;
+            }
             return true;
         }
     }
+
     return false;
 }
 
 
+
+Sens opus(Sens s) {
+    switch (s) {
+        case Sens::Sus: return Sens::Jos;
+        case Sens::Jos: return Sens::Sus;
+        case Sens::Stanga: return Sens::Dreapta;
+        case Sens::Dreapta: return Sens::Stanga;
+        default: return s; // fallback de siguranță
+    }
+}

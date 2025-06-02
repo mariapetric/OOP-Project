@@ -1,11 +1,13 @@
 #include "Masina.h"
 #include "Utils.h"
+#include "ComportamentMasina.h"
 
-
-Masina::Masina(int id_, const Coordonate& pozitieVehicul_,
+Masina::Masina(const Coordonate<int>& pozitieVehicul_,
                Sens sensVehicul_, Sens orientareViitoare_,
-               std::shared_ptr<Strada> strada_)
-    : Vehicul(id_, pozitieVehicul_, sensVehicul_, orientareViitoare_, strada_) {}
+               const std::shared_ptr<Strada>& strada_, int viteza_)
+    : Vehicul(pozitieVehicul_, sensVehicul_, orientareViitoare_, strada_, viteza_) {
+    setStrategieRulare(std::make_shared<ComportamentMasina>());
+}
 
 Masina::Masina (const Masina& other) : Vehicul(other) {}
 
@@ -32,8 +34,8 @@ void Masina::afisare(std::ostream& os) const {
 }
 
 std::shared_ptr<Vehicul> Masina::clone() const {
-//    return std::make_shared<Masina>(*this);
-    return std::shared_ptr<Vehicul>(new Masina(*this));
+    return std::make_shared<Masina>(*this);
+    //return std::shared_ptr<Vehicul>(new Masina(*this));
 }
 
 
@@ -43,36 +45,6 @@ std::ostream& operator<<(std::ostream& os, const Masina& obj) {
 }
 
 
-void Masina::ruleaza(const std::vector<std::shared_ptr<Vehicul>>& vehicule, int MAX_LENGTH, int MAX_WIDTH) {
-	// vede care e limita de viteza
-	viteza = strada->get_LimitaVitezaLaPozitie(pozitieVehicul);
-	// daca semaforul e rosu, opreste
-	auto semafor = strada->get_SemaforLaCoord(pozitieVehicul);
-    if (semafor && semafor->get_Culoare() == Culoare::Rosu)
-        return;
-	// daca e verde si vine un prioritar, opreste
-    if (semafor && semafor->get_Culoare() == Culoare::Verde && existaVehiculPrioritarAproape(pozitieVehicul, vehicule))
-        return;
-	// daca e un vehicul in fata, opreste
-    if (vehiculInFata(*this, vehicule))
-        return;
 
-    if (strada->existaIntersectieLaDistanta(pozitieVehicul, 10, sensVehicul)) {
-        // alege aleator noua directie
-        Sens directieNoua = alegeDirectieRandom(sensVehicul);
-
-
-        set_orientareViitoare(directieNoua);
-        schimbaSensul(directieNoua);
-
-        // gasim noua strada pe care intra vehiculul
-        auto stradaNoua = strada->get_StradaUrmatoare(pozitieVehicul, directieNoua, strada);
-        if (stradaNoua) {
-            schimbaStrada(stradaNoua);
-        }
-    }
-
-	updatePosition (MAX_LENGTH, MAX_WIDTH);
-}
 
 

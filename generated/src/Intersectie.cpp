@@ -5,7 +5,7 @@
 #include "Intersectie.h"
 #include "Strada.h"
 
-Intersectie::Intersectie (const Coordonate& coord_, std::shared_ptr<Strada> strada_vert_, std::shared_ptr<Strada> strada_oriz_) :
+Intersectie::Intersectie (const Coordonate<int>& coord_, std::shared_ptr<Strada> strada_vert_, std::shared_ptr<Strada> strada_oriz_) :
                           CoordonataIntersectie{coord_}, Strada_verticala{strada_vert_}, Strada_orizontala{strada_oriz_} {}
 
 std::ostream& operator<< (std::ostream& os, const Intersectie& obj) {
@@ -19,7 +19,7 @@ std::shared_ptr<Strada> Intersectie::get_CealaltaStrada (const std::shared_ptr<S
     return nullptr;
 }
 
-Coordonate Intersectie::get_Coordonate() const {
+Coordonate<int> Intersectie::get_Coordonate() const {
     return CoordonataIntersectie;
 }
 

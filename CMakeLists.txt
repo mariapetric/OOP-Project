@@ -16,10 +16,9 @@ include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
 
 # Set SFML path if it is not installed globally
-#set(SFML_DIR "C:/Libraries/SFML-2.5.1/lib/cmake/SFML") # Set path to your SFML folder if it's not installed globally
+set(SFML_DIR "C:/Libraries/SFML-2.5.1/lib/cmake/SFML")
 
-# Find SFML package (Graphics, Window, and System are the basic modules required for graphics applications)
-#find_package(SFML 2.5.1 REQUIRED graphics window system)
+find_package(SFML 2.5 REQUIRED COMPONENTS graphics window system)
 
 # External dependencies with FetchContent
 # include(FetchContent)
@@ -47,7 +46,6 @@ include(cmake/CopyHelper.cmake)
 add_executable(${MAIN_EXECUTABLE_NAME}
         main.cpp
         generated/src/Helper.cpp
-        generated/src/Coordonate.cpp
         generated/src/Strada.cpp
         generated/src/Intersectie.cpp
         generated/src/Semafor.cpp
@@ -55,10 +53,19 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         generated/src/Vehicul.cpp
         generated/src/Simulator.cpp
         generated/src/TrafficSimulationException.cpp
+        generated/src/VehiculFactory.cpp
+        generated/src/Masina.cpp
+        generated/src/Autobuz.cpp
+        generated/src/VehiculPrioritar.cpp
+        generated/src/ComportamentRulare.cpp
+        generated/src/ComportamentMasina.cpp
+        generated/src/ComportamentAutobuz.cpp
+        generated/src/ComportamentPrioritar.cpp
+        generated/src/SimulatorGrafica.cpp
 )
 
 # Link SFML libraries to the project
-#target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system)
+target_link_libraries(${MAIN_EXECUTABLE_NAME} PRIVATE sfml-graphics sfml-window sfml-system)
 
 # Set compiler flags (e.g., enabling sanitizers)
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})

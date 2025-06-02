@@ -1,8 +1,11 @@
 #include "VehiculPrioritar.h"
+#include "ComportamentPrioritar.h"
 
-VehiculPrioritar::VehiculPrioritar(int id_, const Coordonate& pozitieVehicul_, Sens sensVehicul_,
-                                   Sens orientareViitoare_, std::shared_ptr<Strada> strada_)
-    : Vehicul(id_, pozitieVehicul_, sensVehicul_, orientareViitoare_, strada_) {}
+VehiculPrioritar::VehiculPrioritar(const Coordonate<int>& pozitieVehicul_, Sens sensVehicul_,
+                                   Sens orientareViitoare_, const std::shared_ptr<Strada>& strada_, int viteza_)
+    : Vehicul(pozitieVehicul_, sensVehicul_, orientareViitoare_, strada_, viteza_) {
+    setStrategieRulare(std::make_shared<ComportamentPrioritar>());
+}
 
 VehiculPrioritar::VehiculPrioritar(const VehiculPrioritar& other)
     : Vehicul(other) {}
@@ -15,7 +18,7 @@ VehiculPrioritar& VehiculPrioritar::operator=(const VehiculPrioritar& other) {
 }
 
 void VehiculPrioritar::afisare(std::ostream& os) const {
-    os << "[VehiculPrioritar]: " << id << " (" << pozitieVehicul.get_x()
+    os << "[VehiculPrioritar]: " << id << ", Pozitie: (" << pozitieVehicul.get_x()
        << ", " << pozitieVehicul.get_y() << "), Viteza: " << viteza
        << ", Sens: ";
 

@@ -12,11 +12,11 @@ enum class Culoare { Verde, Galben, Rosu };
 
 class Semafor {
      double timpVerdeRamas, timpGalbenRamas, timpRosuRamas;
-     Coordonate coordonateSemafor;
+     Coordonate<int> coordonateSemafor;
      std::weak_ptr <Strada> strada;
 
 public:
-     explicit Semafor (double timpVerdeRamas, double timpGalbenRamas, double timpRosuRamas, const Coordonate& coordonateSemafor_, std::shared_ptr<Strada> strada);
+     explicit Semafor (double timpVerdeRamas, double timpGalbenRamas, double timpRosuRamas, const Coordonate<int>& coordonateSemafor_, std::shared_ptr<Strada> strada);
      ~Semafor() = default;
 
      friend std::ostream& operator<< (std::ostream& os, const Semafor& obj);
@@ -24,7 +24,9 @@ public:
      Culoare get_Culoare() const;
 
      void set_Culoare(Culoare culoare);
-     Coordonate get_Coordonate() const;
+     Coordonate<int> get_Coordonate() const;
+     void update(double deltaTimp);
+     std::shared_ptr<Strada> getStrada() const;
 };
 
 #endif //SEMAFOR_H

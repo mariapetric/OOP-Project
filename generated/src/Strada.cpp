@@ -1,10 +1,11 @@
 
 #include "Strada.h"
 #include "Utils.h"
+#include "Coordonate.h"
 
 Strada::Strada(int id_, const std::string& nume_,
-               const Coordonate& coord_, Orientare orientare_,
-               const std::vector<std::pair<Coordonate, int>>& limitari) :
+               const Coordonate<int>& coord_, Orientare orientare_,
+               const std::vector<std::pair<Coordonate<int>, int>>& limitari) :
                id{id_}, nume{nume_}, CoordonataStart{coord_},
                OrientareStrada{orientare_}, intersectii{}, semafoare{}, LimitariViteza{limitari} {
 
@@ -45,24 +46,45 @@ std::ostream& operator<< (std::ostream& os, const Strada& obj) {
     return os;
 }
 
-const Coordonate& Strada::get_CoordonataStart () const {
+const Coordonate<int>& Strada::get_CoordonataStart () const {
   return CoordonataStart;
 }
+
+const Coordonate<int> Strada::get_CoordonataFinal() const {
+  int x = CoordonataStart.get_x();
+  int y = CoordonataStart.get_y();
+
+  switch (OrientareStrada) {
+    case Orientare::Orizontala:
+      if (x == 0)
+        return Coordonate<int>(MAX_LENGTH, y); // merge spre dreapta
+      else
+        return Coordonate<int>(0, y); // merge spre stânga
+    case Orientare::Verticala:
+      if (y == 0)
+        return Coordonate<int>(x, MAX_WIDTH); // merge în jos
+      else
+        return Coordonate<int>(x, 0); // merge în sus
+  }
+
+  return CoordonataStart;
+}
+
 
 const Orientare& Strada::get_OrientareStrada() const {
   return OrientareStrada;
 }
 
-void Strada::adaugaIntersectie(const Coordonate& coord, std::shared_ptr<Intersectie> intersectie) {
+void Strada::adaugaIntersectie(const Coordonate<int>& coord, std::shared_ptr<Intersectie> intersectie) {
   intersectii[coord] = intersectie;
 }
 
-void Strada::adaugaSemafor(const Coordonate& coord, std::shared_ptr<Semafor> semafor) {
+void Strada::adaugaSemafor(const Coordonate<int>& coord, std::shared_ptr<Semafor> semafor) {
   semafoare[coord] = semafor;
 }
 
-std::vector<std::pair<Coordonate, std::shared_ptr<Intersectie>>> Strada::get_IntersectiiOrdonate() const {
-  std::vector<std::pair<Coordonate, std::shared_ptr<Intersectie>>> intersectiiOrdonate;
+std::vector<std::pair<Coordonate<int>, std::shared_ptr<Intersectie>>> Strada::get_IntersectiiOrdonate() const {
+  std::vector<std::pair<Coordonate<int>, std::shared_ptr<Intersectie>>> intersectiiOrdonate;
 
   for (const auto& [coord, intersectie] : intersectii) {
     if (auto sp = intersectie.lock()) {
@@ -86,9 +108,9 @@ std::vector<std::pair<Coordonate, std::shared_ptr<Intersectie>>> Strada::get_Int
 }
 
 
-std::vector < std::pair<Coordonate, int> > Strada::get_LimitariVitezaSorted () const {
+std::vector < std::pair<Coordonate<int>, int> > Strada::get_LimitariVitezaSorted () const {
 
-  std::vector < std::pair<Coordonate, int> > limiteOrdonate;
+  std::vector < std::pair<Coordonate<int>, int> > limiteOrdonate;
   for (const auto& [coord, Viteza] : LimitariViteza) {
     limiteOrdonate.push_back({coord, Viteza});
   }
@@ -110,7 +132,7 @@ std::vector < std::pair<Coordonate, int> > Strada::get_LimitariVitezaSorted () c
 }
 
 
-std::shared_ptr<Semafor> Strada::get_SemaforLaCoord(const Coordonate& coord) const {
+std::shared_ptr<Semafor> Strada::get_SemaforLaCoord(const Coordonate<int>& coord) const {
   auto it = semafoare.find(coord);
   if (it != semafoare.end()) {
     return it->second;
@@ -122,7 +144,7 @@ int Strada::get_Id () const {
   return id;
 }
 
-int Strada::get_LimitaVitezaLaPozitie(const Coordonate& poz) const {
+int Strada::get_LimitaVitezaLaPozitie(const Coordonate<int>& poz) const {
   for (const auto& [coord, viteza] : LimitariViteza) {
     if ( distanta(poz, coord) < 100 )
       return viteza;
@@ -130,7 +152,7 @@ int Strada::get_LimitaVitezaLaPozitie(const Coordonate& poz) const {
   return 50; //zona fara limitare
 }
 
-std::shared_ptr<Semafor> Strada::get_SemaforLaPozitie(const Coordonate& poz) const {
+std::shared_ptr<Semafor> Strada::get_SemaforLaPozitie(const Coordonate<int>& poz) const {
   for (const auto& [coord, semafor] : semafoare) {
     if ( distanta(poz, coord) < 100 ) {
       return semafor;
@@ -140,7 +162,7 @@ std::shared_ptr<Semafor> Strada::get_SemaforLaPozitie(const Coordonate& poz) con
 }
 
 
-bool Strada::existaIntersectieLaDistanta(const Coordonate& poz, int distantaMax, Sens sensVehicul) const {
+bool Strada::existaIntersectieLaDistanta(const Coordonate<int>& poz, int distantaMax, Sens sensVehicul) const {
   auto intersectiiOrdonate = get_IntersectiiOrdonate();
 
   for (const auto& [coordIntersectie, intersectie] : intersectiiOrdonate) {
@@ -168,7 +190,7 @@ bool Strada::existaIntersectieLaDistanta(const Coordonate& poz, int distantaMax,
 }
 
 
-std::shared_ptr<Strada> Strada::get_StradaUrmatoare(const Coordonate& poz, Sens directieNoua, std::shared_ptr<Strada> stradaAct) const {
+std::shared_ptr<Strada> Strada::get_StradaUrmatoare(const Coordonate<int>& poz, Sens directieNoua, std::shared_ptr<Strada> stradaAct) const {
   std::shared_ptr<Strada> stradaUrmatoare = nullptr;
   int distantaMinima = std::numeric_limits<int>::max();
 
@@ -205,7 +227,9 @@ std::shared_ptr<Strada> Strada::get_StradaUrmatoare(const Coordonate& poz, Sens 
   return stradaUrmatoare;
 }
 
-
+bool Strada::areIntersectieLaCoordonata(const Coordonate<int>& c) const {
+  return intersectii.find(c) != intersectii.end();
+}
 
 
 
