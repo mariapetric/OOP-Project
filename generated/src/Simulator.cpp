@@ -4,52 +4,51 @@
 #include <thread>
 #include <chrono>
 
-void Simulator::adaugaStrada (const std::shared_ptr<Strada> s) {
-  strazi.push_back(s);
+void Simulator::addStreet(const std::shared_ptr<Street> s) {
+    streets.push_back(s);
 }
 
-void Simulator::adaugaIntersectie(const std::shared_ptr<Intersectie> i) {
-  intersectii.push_back(i);
+void Simulator::addIntersection(const std::shared_ptr<Intersection> i) {
+    intersections.push_back(i);
 }
 
-void Simulator::adaugaSemafoare (const std::shared_ptr<Semafor> s) {
-  semafoare.push_back(s);
+void Simulator::addStoplight(const std::shared_ptr<Stoplight> s) {
+    stoplights.push_back(s);
 }
 
-void Simulator::adaugaVehicul(const std::shared_ptr<Vehicul> v) {
-  vehicule.push_back(v);
+void Simulator::addVehicle(const std::shared_ptr<Vehicle> v) {
+    vehicles.push_back(v);
 }
 
-void Simulator::simuleazaTimp(double deltaSecunde) {
-  // 1) Actualizează semafoarele cu deltaSecunde
-  for (auto& semafor : semafoare) {
-    if (semafor) semafor->update(deltaSecunde);
-  }
+void Simulator::simulateTime(double deltaSeconds) {
+    for (auto &stoplight : stoplights) {
+        if (stoplight) stoplight->update(deltaSeconds);
+    }
 
-  // 2) Rulează comportamentul fiecărui vehicul, folosind exact același deltaSecunde
-  for (auto& v : vehicule) {
-    if (v)
-      v->ruleaza(vehicule, 1000, 1000, deltaSecunde);
-  }
+    for (auto &v : vehicles) {
+        if (v)
+            v->drive(vehicles, 1000, 1000, deltaSeconds);
+    }
 
-  // 3) Avansăm timpul intern (dacă îl mai folosești în simulare)
-  currentTime += deltaSecunde;
+    currentTime += deltaSeconds;
 }
 
-
-int Simulator::getTimpCurent() const {
-  return currentTime;
+int Simulator::getCurrentTime() const {
+    return currentTime;
 }
 
-const std::vector<std::shared_ptr<Vehicul>>& Simulator::getVehicule() const {
-  return vehicule;
+const std::vector<std::shared_ptr<Vehicle>> &Simulator::getVehicles() const {
+    return vehicles;
 }
-const std::vector <std::shared_ptr<Strada>>& Simulator::getStrazi() const {
-  return strazi;
+
+const std::vector<std::shared_ptr<Street>> &Simulator::getStreets() const {
+    return streets;
 }
-const std::vector <std::shared_ptr<Semafor>>& Simulator::getSemafoare() const {
-  return semafoare;
+
+const std::vector<std::shared_ptr<Stoplight>> &Simulator::getStoplights() const {
+    return stoplights;
 }
-const std::vector <std::shared_ptr<Intersectie>>& Simulator::getIntersectii() const {
-  return intersectii;
+
+const std::vector<std::shared_ptr<Intersection>> &Simulator::getIntersections() const {
+    return intersections;
 }

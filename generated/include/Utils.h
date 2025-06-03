@@ -8,30 +8,35 @@
 #include <unordered_set>
 #include <queue>
 #include <random>
-#include "Coordonate.h"
-#include "Intersectie.h"
-#include "Semafor.h"
-#include "Utils.h"
-#include "Vehicul.h"
-#include "Autobuz.h"
-#include "VehiculPrioritar.h"
-#include "Sens.h"
-class Strada;
-class Masina;
+#include "Coordinates.h"
+#include "Intersection.h"
+#include "Stoplight.h"
+#include "Vehicle.h"
+#include "Bus.h"
+#include "PriorityVehicle.h"
+#include "Orientation.h"
 
-bool seIntersecteaza (const std::shared_ptr<Strada>& strada1, const std::shared_ptr<Strada>& strada2);
+class Street;
+class Car;
 
-Coordonate<int> calculeazaIntersectie (const std::shared_ptr<Strada>& strada1, const std::shared_ptr<Strada>& strada2);
+bool intersects(const std::shared_ptr<Street>& street1, const std::shared_ptr<Street>& street2);
 
-int distanta(const Coordonate<int>& coord1, const Coordonate<int>& coord2);
-Culoare culoare_opusa(Culoare culoareCurenta);
-void seteazaSemafoarePeStrada (const std::shared_ptr<Strada> strada, const Culoare culoareInitiala, int distantaSincronizare);
-void stabilesteSemafoare(std::vector<std::shared_ptr<Strada>>& strazi, int distantaSincronizare);
-Sens alegeDirectieRandom(Sens curent);
-bool existaVehiculPrioritarAproape (const Coordonate<int>& poz, const std::vector<std::shared_ptr<Vehicul>>& vehicule);
-bool vehiculInFata(const Vehicul& vehicul, const std::vector<std::shared_ptr<Vehicul>>& vehicule, float deltaSecunde);
-Sens opus(Sens s);
+Coordinates<int> computeIntersection(const std::shared_ptr<Street>& street1, const std::shared_ptr<Street>& street2);
+
+int distance(const Coordinates<int>& coord1, const Coordinates<int>& coord2);
+
+Color oppositeColor(Color currentColor);
+
+void setStreetStoplights(const std::shared_ptr<Street>& street, Color initialColor, int syncDistance);
+
+void initializeStoplights(std::vector<std::shared_ptr<Street>>& streets, int syncDistance);
+
+Orientation getRandomDirection(Orientation current);
+
+bool isPriorityVehicleNearby(const Coordinates<int>& pos, const std::vector<std::shared_ptr<Vehicle>>& vehicles);
+
+bool vehicleAhead(const Vehicle& vehicle, const std::vector<std::shared_ptr<Vehicle>>& vehicles, float deltaSeconds);
+
+Orientation opposite(Orientation o);
 
 #endif //UTILS_H
-
-

@@ -6,234 +6,158 @@
 #include <unordered_set>
 #include <queue>
 #include <random>
-#include "Coordonate.h"
-#include "Strada.h"
-#include "Intersectie.h"
-#include "Semafor.h"
+#include "Coordinates.h"
+#include "Street.h"
+#include "Intersection.h"
+#include "Stoplight.h"
 #include "Utils.h"
-#include "Vehicul.h"
-#include "Autobuz.h"
-#include "VehiculPrioritar.h"
-#include "Sens.h"
+#include "Vehicle.h"
+#include "Bus.h"
+#include "PriorityVehicle.h"
+#include "Orientation.h"
 
-bool seIntersecteaza (const std::shared_ptr<Strada>& strada1, const std::shared_ptr<Strada>& strada2) {
-    if (strada1->get_OrientareStrada() != strada2->get_OrientareStrada())
-      return true;
-    return false;
+bool intersects(const std::shared_ptr<Street>& s1, const std::shared_ptr<Street>& s2) {
+    return s1->getDirection() != s2->getDirection();
 }
 
-Coordonate<int> calculeazaIntersectie (const std::shared_ptr<Strada>& strada1, const std::shared_ptr<Strada>& strada2) {
-    int x=-1, y=-1;
-    if (strada1->get_OrientareStrada() == Orientare::Verticala && strada2->get_OrientareStrada() == Orientare::Orizontala) {
-        x = strada1->get_CoordonataStart().get_x();
-        y = strada2->get_CoordonataStart().get_y();
+Coordinates<int> computeIntersection(const std::shared_ptr<Street>& s1, const std::shared_ptr<Street>& s2) {
+    int x = -1, y = -1;
+    if (s1->getDirection() == Direction::Vertical && s2->getDirection() == Direction::Horizontal) {
+        x = s1->getStartCoordinate().get_x();
+        y = s2->getStartCoordinate().get_y();
+    } else {
+        x = s2->getStartCoordinate().get_x();
+        y = s1->getStartCoordinate().get_y();
     }
-    else {
-        x = strada2->get_CoordonataStart().get_x();
-        y = strada1->get_CoordonataStart().get_y();
+    return Coordinates{x, y};
+}
+
+Color culoare_opusa(Color current) {
+    switch (current) {
+        case Color::Green: return Color::Red;
+        case Color::Yellow: return Color::Red;
+        case Color::Red: return Color::Green;
+        default: return Color::Red;
     }
-    return Coordonate{x, y};
 }
 
-Culoare culoare_opusa(Culoare culoareCurenta) {
-    switch (culoareCurenta) {
-        case Culoare::Verde:
-            return Culoare::Rosu;
-        case Culoare::Galben:
-            return Culoare::Rosu;
-        case Culoare::Rosu:
-            return Culoare::Verde;
-        default:
-            return Culoare::Rosu;
-    }
-
-
+int distance(const Coordinates<int>& c1, const Coordinates<int>& c2) {
+    return std::abs(c1.get_x() - c2.get_x()) + std::abs(c1.get_y() - c2.get_y());
 }
 
-int distanta(const Coordonate<int>& coord1, const Coordonate<int>& coord2) {
-    return std::abs(coord1.get_x() - coord2.get_x()) + std::abs(coord1.get_y() - coord2.get_y());
-}
+void seteazaSemafoarePeStrada(const std::shared_ptr<Street> street, const Color initialColor, int syncDistance) {
+    auto intersections = street->getSortedIntersections();
+    Color currentColor = initialColor;
+    Coordinates<int> lastPos;
 
-
-void seteazaSemafoarePeStrada (const std::shared_ptr<Strada> strada, const Culoare culoareInitiala, int distantaSincronizare) {
-    auto intersectii = strada->get_IntersectiiOrdonate();
-
-    Culoare culoareCurenta = culoareInitiala;
-    Coordonate<int> ultimaPoz;
-
-    for (size_t i = 0; i < intersectii.size(); ++i) {
-        auto& [coord, intersectie] = intersectii[i];
-
-        if (i==0 || distanta(coord, ultimaPoz) > distantaSincronizare) {
-            culoareCurenta = culoare_opusa(culoareCurenta);
-            ultimaPoz = coord;
+    for (size_t i = 0; i < intersections.size(); ++i) {
+        auto& [coord, intersection] = intersections[i];
+        if (i == 0 || distance(coord, lastPos) > syncDistance) {
+            currentColor = culoare_opusa(currentColor);
+            lastPos = coord;
         }
-        auto semafor = strada->get_SemaforLaCoord(coord);
-        semafor->set_Culoare(culoareCurenta);
+        auto light = street->getStoplightAtCoord(coord);
+        light->setColor(currentColor);
     }
-
 }
 
+void initializeStoplights(std::vector<std::shared_ptr<Street>>& streets, int syncDistance) {
+    std::queue<std::shared_ptr<Street>> q;
+    std::unordered_set<int> visited;
+    std::unordered_map<int, Color> assignedColors;
 
-void stabilesteSemafoare(std::vector<std::shared_ptr<Strada>>& strazi, int distantaSincronizare) {
-    std::queue<std::shared_ptr<Strada>> coada;
-    std::unordered_set<int> straziProcesate;  // sa nu iau aceeasi strada de mai multe ori
-    std::unordered_map<int, Culoare> semafoarePeStrada;
+    auto startStreet = streets[0];
+    q.push(startStreet);
+    visited.insert(startStreet->getId());
+    assignedColors[startStreet->getId()] = Color::Red;
+    seteazaSemafoarePeStrada(startStreet, Color::Red, syncDistance);
 
-    // ia un semafor random pentru a începe
-    auto stradaStart = strazi[0];
-    coada.push(stradaStart);
-    straziProcesate.insert(stradaStart->get_Id());
+    while (!q.empty()) {
+        auto currentStreet = q.front();
+        q.pop();
 
-    // punem semaforul pe rosu
-    semafoarePeStrada[stradaStart->get_Id()] = Culoare::Rosu;
-    seteazaSemafoarePeStrada(stradaStart, Culoare::Rosu, distantaSincronizare);
+        for (auto& [coord, intersection] : currentStreet->getSortedIntersections()) {
+            auto neighborStreet = intersection->get_OtherStreet(currentStreet);
+            if (visited.find(neighborStreet->getId()) == visited.end()) {
+                auto currentLight = currentStreet->getStoplightAtCoord(coord);
+                Color opposite = culoare_opusa(currentLight->getColor());
 
-    while (!coada.empty()) {
-        auto stradaCurenta = coada.front();
-        coada.pop();
-
-        // parcurgem intersecțiile de pe strada curenta
-        for (auto& [coord, intersectie] : stradaCurenta->get_IntersectiiOrdonate()) {
-            auto stradaVecina = intersectie->get_CealaltaStrada(stradaCurenta);
-
-            if (straziProcesate.find(stradaVecina->get_Id()) == straziProcesate.end()) {
-
-                auto semaforCurent = stradaCurenta->get_SemaforLaCoord(coord);
-                Culoare culoareOpusa = culoare_opusa(semaforCurent->get_Culoare());
-
-                semafoarePeStrada[stradaVecina->get_Id()] = culoareOpusa;
-
-                seteazaSemafoarePeStrada(stradaVecina, culoareOpusa, distantaSincronizare);
-
-                coada.push(stradaVecina);
-                straziProcesate.insert(stradaVecina->get_Id());
+                assignedColors[neighborStreet->getId()] = opposite;
+                seteazaSemafoarePeStrada(neighborStreet, opposite, syncDistance);
+                q.push(neighborStreet);
+                visited.insert(neighborStreet->getId());
             }
         }
     }
 }
 
-
-Sens alegeDirectieRandom(Sens curent) {
+Orientation getRandomDirection(Orientation current) {
     static std::default_random_engine eng{std::random_device{}()};
-    // 0 = inainte , 1 = stanga, 2 = dreapta
     static std::uniform_int_distribution<int> dist(0, 2);
     int opt = dist(eng);
 
-    switch (curent) {
-        case Sens::Sus:
-            if (opt == 0) return Sens::Sus;
-            else {
-                if (opt == 1) return Sens::Stanga;
-                else return Sens::Dreapta;
-            }
-        case Sens::Jos:
-            if (opt == 0) return Sens::Jos;
-            else {
-                if (opt == 1) return Sens::Dreapta;
-                else return Sens::Stanga;
-            }
-        case Sens::Stanga:
-            if (opt == 0) return Sens::Stanga;
-            else {
-                if (opt == 1) return Sens::Jos;
-                else return Sens::Sus;
-            }
-        case Sens::Dreapta:
-            if (opt == 0) return Sens::Dreapta;
-            else {
-                if (opt == 1) return Sens::Sus;
-                else return Sens::Jos;
-            }
+    switch (current) {
+        case Orientation::Up: return (opt == 0) ? Orientation::Up : (opt == 1) ? Orientation::Left : Orientation::Right;
+        case Orientation::Down: return (opt == 0) ? Orientation::Down : (opt == 1) ? Orientation::Right : Orientation::Left;
+        case Orientation::Left: return (opt == 0) ? Orientation::Left : (opt == 1) ? Orientation::Down : Orientation::Up;
+        case Orientation::Right: return (opt == 0) ? Orientation::Right : (opt == 1) ? Orientation::Up : Orientation::Down;
     }
-    return curent;
+    return current;
 }
 
-bool existaVehiculPrioritarAproape (const Coordonate<int>& poz, const std::vector<std::shared_ptr<Vehicul>>& vehicule) {
-    for (const auto& v : vehicule) {
-        if (auto vp = std::dynamic_pointer_cast<VehiculPrioritar>(v)) {
-            if (distanta (poz, vp->get_PozitieVehicul() ) < 10) {
+bool isPriorityVehicleNearby(const Coordinates<int>& pos, const std::vector<std::shared_ptr<Vehicle>>& vehicles) {
+    for (const auto& v : vehicles) {
+        if (auto pv = std::dynamic_pointer_cast<PriorityVehicle>(v)) {
+            if (distance(pos, pv->get_Position()) < 10)
                 return true;
-            }
         }
     }
     return false;
 }
 
+bool vehicleAhead(const Vehicle& vehicle, const std::vector<std::shared_ptr<Vehicle>>& vehicles, float deltaSec) {
+    const auto& pos = vehicle.get_Position();
+    auto orientation = vehicle.get_Orientation();
+    auto streetId = vehicle.get_Street()->getId();
 
-bool vehiculInFata(
-    const Vehicul& vehicul,
-    const std::vector<std::shared_ptr<Vehicul>>& vehicule, float deltaSecunde
-) {
-    const auto& pozCurenta = vehicul.get_PozitieVehicul();
-    auto sens = vehicul.get_Sens();
-    auto idStrada = vehicul.get_Strada()->get_Id();
+    float dxPerFrame = static_cast<float>(vehicle.get_Speed()) * deltaSec * 25.0f;
+    int detectionRange = static_cast<int>(std::round(dxPerFrame));
+    detectionRange = std::max(detectionRange, 1);
 
-    // Prag minim de „detectie” (cel puţin 1)
-    float dxPerFrame = static_cast<float>(vehicul.get_Viteza()) * deltaSecunde * 25.0f;
-    int pragDetectie = static_cast<int>(std::round(dxPerFrame));
-    if (pragDetectie < 1)
-        pragDetectie = 1;   // măcar un pixel minim
+    for (const auto& v : vehicles) {
+        if (v->get_Id() == vehicle.get_Id()) continue;
+        if (v->get_Street()->getId() != streetId) continue;
+        if (v->get_Orientation() != orientation) continue;
 
-
-    for (const auto& v : vehicule) {
-        if (v->get_Id() == vehicul.get_Id())
-            continue;
-        if (v->get_Strada()->get_Id() != idStrada)
-            continue;
-        if (v->get_Sens() != sens)
-            continue;
-
-        const auto& pozV = v->get_PozitieVehicul();
+        const auto& vPos = v->get_Position();
         int dist = -1;
 
-        switch (sens) {
-            case Sens::Sus:
-                if (pozV.get_x() == pozCurenta.get_x() &&
-                    pozV.get_y() <= pozCurenta.get_y())
-                {
-                    dist = pozCurenta.get_y() - pozV.get_y();
-                }
+        switch (orientation) {
+            case Orientation::Up:
+                if (vPos.get_x() == pos.get_x() && vPos.get_y() <= pos.get_y())
+                    dist = pos.get_y() - vPos.get_y();
                 break;
-
-            case Sens::Jos:
-                if (pozV.get_x() == pozCurenta.get_x() &&
-                    pozV.get_y() >= pozCurenta.get_y())
-                {
-                    dist = pozV.get_y() - pozCurenta.get_y();
-                }
+            case Orientation::Down:
+                if (vPos.get_x() == pos.get_x() && vPos.get_y() >= pos.get_y())
+                    dist = vPos.get_y() - pos.get_y();
                 break;
-
-            case Sens::Stanga:
-                if (pozV.get_y() == pozCurenta.get_y() &&
-                    pozV.get_x() <= pozCurenta.get_x())
-                {
-                    dist = pozCurenta.get_x() - pozV.get_x();
-                }
+            case Orientation::Left:
+                if (vPos.get_y() == pos.get_y() && vPos.get_x() <= pos.get_x())
+                    dist = pos.get_x() - vPos.get_x();
                 break;
-
-            case Sens::Dreapta:
-                if (pozV.get_y() == pozCurenta.get_y() &&
-                    pozV.get_x() >= pozCurenta.get_x())
-                {
-                    dist = pozV.get_x() - pozCurenta.get_x();
-                }
+            case Orientation::Right:
+                if (vPos.get_y() == pos.get_y() && vPos.get_x() >= pos.get_x())
+                    dist = vPos.get_x() - pos.get_x();
                 break;
         }
 
-        if (dist < 0)
-            continue;
+        if (dist < 0) continue;
 
-        // Dacă v[i] e exact în spatele/din faţă (dist == 0),
-        // îl considerăm blocant doar dacă are ID mai mic decât vehiculul curent.
-        bool acelasiLocSiIDmaiMic = (dist == 0 && v->get_Id() < vehicul.get_Id());
+        bool sameLocationAndLowerId = (dist == 0 && v->get_Id() < vehicle.get_Id());
 
-        if ((dist > 0 && dist <= pragDetectie) || acelasiLocSiIDmaiMic) {
-            // dacă e autobuz oprit în stație chiar pe locul respectiv,
-            // atunci îl ignorăm
-            if (auto autob = std::dynamic_pointer_cast<Autobuz>(v)) {
-                if (autob->eOpritInStatie())
-                    continue;
+        if ((dist > 0 && dist <= detectionRange) || sameLocationAndLowerId) {
+            if (auto bus = std::dynamic_pointer_cast<Bus>(v)) {
+                if (bus->isStoppedAtStation()) continue;
             }
             return true;
         }
@@ -242,14 +166,12 @@ bool vehiculInFata(
     return false;
 }
 
-
-
-Sens opus(Sens s) {
-    switch (s) {
-        case Sens::Sus: return Sens::Jos;
-        case Sens::Jos: return Sens::Sus;
-        case Sens::Stanga: return Sens::Dreapta;
-        case Sens::Dreapta: return Sens::Stanga;
-        default: return s; // fallback de siguranță
+Orientation opposite(Orientation o) {
+    switch (o) {
+        case Orientation::Up: return Orientation::Down;
+        case Orientation::Down: return Orientation::Up;
+        case Orientation::Left: return Orientation::Right;
+        case Orientation::Right: return Orientation::Left;
+        default: return o;
     }
 }

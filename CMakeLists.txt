@@ -20,22 +20,22 @@ find_package(SFML 2.5 REQUIRED COMPONENTS graphics window system)
 add_executable(oop
         main.cpp
         generated/src/Helper.cpp
-        generated/src/Strada.cpp
-        generated/src/Intersectie.cpp
-        generated/src/Semafor.cpp
+        generated/src/Street.cpp
+        generated/src/Intersection.cpp
+        generated/src/Stoplight.cpp
         generated/src/Utils.cpp
-        generated/src/Vehicul.cpp
+        generated/src/Vehicle.cpp
         generated/src/Simulator.cpp
         generated/src/TrafficSimulationException.cpp
-        generated/src/VehiculFactory.cpp
-        generated/src/Masina.cpp
-        generated/src/Autobuz.cpp
-        generated/src/VehiculPrioritar.cpp
-        generated/src/ComportamentRulare.cpp
-        generated/src/ComportamentMasina.cpp
-        generated/src/ComportamentAutobuz.cpp
-        generated/src/ComportamentPrioritar.cpp
-        generated/src/SimulatorGrafica.cpp
+        generated/src/VehicleFactory.cpp
+        generated/src/Car.cpp
+        generated/src/Bus.cpp
+        generated/src/PriorityVehicle.cpp
+        generated/src/Behaviour.cpp
+        generated/src/CarBehaviour.cpp
+        generated/src/BusBehaviour.cpp
+        generated/src/PriorityBehaviour.cpp
+        generated/src/GraphicSimulator.cpp
 )
 
 target_link_libraries(oop PRIVATE sfml-graphics sfml-window sfml-system)
@@ -100,22 +100,22 @@ copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME oop)
 #add_executable(${MAIN_EXECUTABLE_NAME}
 #        main.cpp
 #        generated/src/Helper.cpp
-#        generated/src/Strada.cpp
-#        generated/src/Intersectie.cpp
-#        generated/src/Semafor.cpp
+#        generated/src/Street.cpp
+#        generated/src/Intersection.cpp
+#        generated/src/Stoplight.cpp
 #        generated/src/Utils.cpp
-#        generated/src/Vehicul.cpp
+#        generated/src/Vehicle.cpp
 #        generated/src/Simulator.cpp
 #        generated/src/TrafficSimulationException.cpp
-#        generated/src/VehiculFactory.cpp
-#        generated/src/Masina.cpp
-#        generated/src/Autobuz.cpp
-#        generated/src/VehiculPrioritar.cpp
-#        generated/src/ComportamentRulare.cpp
-#        generated/src/ComportamentMasina.cpp
-#        generated/src/ComportamentAutobuz.cpp
-#        generated/src/ComportamentPrioritar.cpp
-#        generated/src/SimulatorGrafica.cpp
+#        generated/src/VehicleFactory.cpp
+#        generated/src/Car.cpp
+#        generated/src/Bus.cpp
+#        generated/src/PriorityVehicle.cpp
+#        generated/src/Behaviour.cpp
+#        generated/src/CarBehaviour.cpp
+#        generated/src/BusBehaviour.cpp
+#        generated/src/PriorityBehaviour.cpp
+#        generated/src/GraphicSimulator.cpp
 #)
 #
 ## Link SFML libraries to the project

@@ -3,127 +3,147 @@
 #include <string>
 #include <memory>
 
-#include "Coordonate.h"
-#include "Strada.h"
-#include "Intersectie.h"
-#include "Semafor.h"
+#include "Coordinates.h"
+#include "Street.h"
+#include "Intersection.h"
+#include "Stoplight.h"
 #include "Utils.h"
-#include "Vehicul.h"
+#include "Vehicle.h"
 #include "Simulator.h"
-#include "SimulatorGrafica.h"
+#include "GraphicSimulator.h"
 
 int main() {
-    const int MAX_LENGTH = 1000;
-    const int MAX_WIDTH = 1000;
-    const int distantaSincronizare = 130;
-    Simulator& sim = Simulator::getInstance();
+    try {
+        const int MAX_LENGTH = 1000;
+        const int MAX_WIDTH = 1000;
+        const int syncDistance = 130;
+        Simulator &sim = Simulator::getInstance();
 
-    // crearea strazilor
-    std::vector <std::shared_ptr<Strada>> strazi;
-    std::vector <std::shared_ptr<Intersectie>> intersectii;
-    std::vector <std::shared_ptr<Semafor>> semafoare;
+        // Create streets
+        std::vector<std::shared_ptr<Street>> streets;
+        std::vector<std::shared_ptr<Intersection>> intersections;
+        std::vector<std::shared_ptr<Stoplight>> stoplights;
 
-    Coordonate coord1{100, 0};
-    std::vector<std::pair<Coordonate<int>, int>> limitari1 = {
-        {Coordonate{100, 5}, 50},
-        {Coordonate{100, 100}, 40},
-        {Coordonate{100, 555}, 30}
-    };
+        Coordinates coord1{100, 0};
+        std::vector<std::pair<Coordinates<int>, int>> limits1 = {
+            {Coordinates{100, 5}, 50},
+            {Coordinates{100, 100}, 40},
+            {Coordinates{100, 555}, 30}
+        };
 
-    auto Strada1 = std::make_shared<Strada>(1, "Strada Mare", coord1, Orientare::Verticala, limitari1);
-    strazi.push_back(Strada1);
+        auto street1 = std::make_shared<Street>("Main Street", coord1, Direction::Vertical, limits1);
+        streets.push_back(street1);
 
-    Coordonate coord2{0, 150};
-    std::vector<std::pair<Coordonate<int>, int>> limitari2 = {
-        {Coordonate{25, 150}, 50},
-        {Coordonate{260, 150}, 50},
-        {Coordonate{700, 150}, 30}
-    };
+        Coordinates coord2{0, 150};
+        std::vector<std::pair<Coordinates<int>, int>> limits2 = {
+            {Coordinates{25, 150}, 50},
+            {Coordinates{260, 150}, 50},
+            {Coordinates{700, 150}, 30}
+        };
 
-    auto Strada2 = std::make_shared<Strada>(2, "Strada Mică", coord2, Orientare::Orizontala, limitari2);
-    strazi.push_back(Strada2);
+        auto street2 = std::make_shared<Street>("Small Street", coord2, Direction::Horizontal, limits2);
+        streets.push_back(street2);
 
-    Coordonate coord{400, 0};
-    std::vector<std::pair<Coordonate<int>, int>> limitari = {
-        {Coordonate{400, 150}, 50},
-        {Coordonate{400, 550}, 50},
-        {Coordonate{400, 850}, 30}
-    };
+        Coordinates coord3{400, 0};
+        std::vector<std::pair<Coordinates<int>, int>> limits3 = {
+            {Coordinates{400, 150}, 50},
+            {Coordinates{400, 550}, 50},
+            {Coordinates{400, 850}, 30}
+        };
 
-    auto Stradaa = std::make_shared<Strada>(3, "Strada Mică", coord, Orientare::Verticala, limitari);
-    strazi.push_back(Stradaa);
+        auto street3 = std::make_shared<Street>("Tiny Street", coord3, Direction::Vertical, limits3);
+        streets.push_back(street3);
 
-    // crearea intersectiilor si a semafoarelor
-    for (size_t i=0; i < strazi.size(); ++i) {
-        for (size_t j=i+1; j < strazi.size(); ++j) {
-            auto strada1 = strazi[i];
-            auto strada2 = strazi[j];
+        Coordinates coord4{0, 550};
+        std::vector<std::pair<Coordinates<int>, int>> limits4 = {
+            {Coordinates{150, 550}, 50},
+            {Coordinates{550, 550}, 50},
+            {Coordinates{850, 550}, 30}
+        };
 
-            if (seIntersecteaza (strada1, strada2)) {
-                std::cout << "inatlnireee\n";
-                Coordonate coordIntersectie = calculeazaIntersectie(strada1, strada2);
+        auto street4 = std::make_shared<Street>("Main Street", coord4, Direction::Horizontal, limits4);
+        streets.push_back(street4);
 
-                std::shared_ptr<Intersectie> intersectie;
-                if (strada1->get_OrientareStrada() == Orientare::Verticala)
-                    intersectie = std::make_shared<Intersectie>(coordIntersectie, strada1, strada2);
-                else
-                    intersectie = std::make_shared<Intersectie>(coordIntersectie, strada2, strada1);
-                std::shared_ptr<Semafor> semafor1 = std::make_shared<Semafor>(0, 0, 0, coordIntersectie, strada1);
-                std::shared_ptr<Semafor> semafor2 = std::make_shared<Semafor>(0, 0, 0, coordIntersectie, strada2);
+        // Create intersections and stoplights
+        for (size_t i = 0; i < streets.size(); ++i) {
+            for (size_t j = i + 1; j < streets.size(); ++j) {
+                auto s1 = streets[i];
+                auto s2 = streets[j];
 
+                if (intersects(s1, s2)) {
+                    std::cout << "Intersection detected\n";
+                    Coordinates interCoord = computeIntersection(s1, s2);
 
-                // Adaugă intersecția și semaforul în unordered_map
-                strada1->adaugaIntersectie(coordIntersectie, intersectie);
-                strada2->adaugaIntersectie(coordIntersectie, intersectie);
-                strada1->adaugaSemafor(coordIntersectie, semafor1);
-                strada2->adaugaSemafor(coordIntersectie, semafor2);
+                    std::shared_ptr<Intersection> intersection;
+                    if (s1->getDirection() == Direction::Vertical)
+                        intersection = std::make_shared<Intersection>(interCoord, s1, s2);
+                    else
+                        intersection = std::make_shared<Intersection>(interCoord, s2, s1);
 
-                intersectii.push_back(intersectie);
-                semafoare.push_back(semafor1);
-                semafoare.push_back(semafor2);
+                    auto light1 = std::make_shared<Stoplight>(0, 0, 0, interCoord, s1);
+                    auto light2 = std::make_shared<Stoplight>(0, 0, 0, interCoord, s2);
+
+                    s1->addIntersection(interCoord, intersection);
+                    s2->addIntersection(interCoord, intersection);
+                    s1->addStoplight(interCoord, light1);
+                    s2->addStoplight(interCoord, light2);
+
+                    intersections.push_back(intersection);
+                    stoplights.push_back(light1);
+                    stoplights.push_back(light2);
+                }
             }
         }
+
+        // Synchronize stoplights
+        initializeStoplights(streets, syncDistance);
+
+        // Create vehicles
+        auto car = std::make_shared<Car>(Coordinates{100, 0}, Orientation::Up, Orientation::Up, street1, 70);
+        auto bus = std::make_shared<Bus>(Coordinates{100, 0}, Orientation::Up, Orientation::Up, street1, 70);
+        auto priority = std::make_shared<PriorityVehicle>(Coordinates{100, 0}, Orientation::Up, Orientation::Up, street1, 70);
+        auto bus2 = std::make_shared<Bus>(Coordinates{100, MAX_WIDTH}, Orientation::Down, Orientation::Down, street1, 70, 0);
+
+        std::vector<std::shared_ptr<Vehicle>> vehicles = {car, bus, priority, bus2};
+
+        // Add to simulator
+        for (auto &v : vehicles)
+            sim.addVehicle(v);
+        for (auto &s : streets)
+            sim.addStreet(s);
+        for (auto &i : intersections)
+            sim.addIntersection(i);
+        for (auto &l : stoplights)
+            sim.addStoplight(l);
+
+        // Print simulator stats
+        std::cout << "Total vehicles: " << sim.getVehicles().size() << '\n';
+        std::cout << "Number of streets: " << sim.getStreets().size() << "\n";
+        std::cout << "Number of vehicles: " << sim.getVehicles().size() << "\n";
+        std::cout << "Number of stoplights: " << sim.getStoplights().size() << "\n";
+        std::cout << "Number of intersections: " << sim.getIntersections().size() << "\n";
+
+        GraphicSimulator graphics(sim, 1000, 1000);
+        graphics.run();
+    }
+    catch (const VehicleMovementException &ex) {
+        std::cerr << "Vehicle error: " << ex.what() << std::endl;
+    }
+    catch (const TrafficControlException &ex) {
+        std::cerr << "Traffic control error: " << ex.what() << std::endl;
+    }
+    catch (const InvalidStartPositionException &ex) {
+        std::cerr << "Start position error: " << ex.what() << std::endl;
+    }
+    catch (const TrafficSimulationException &ex) {
+        std::cerr << "Simulation error: " << ex.what() << std::endl;
+    }
+    catch (const std::exception &ex) {
+        std::cerr << "Standard exception: " << ex.what() << std::endl;
+    }
+    catch (...) {
+        std::cerr << "Unknown exception caught!" << std::endl;
     }
 
-    // stabilirea semafoarelor
-    stabilesteSemafoare (strazi, distantaSincronizare);
-
-    // Creează o mașină pe acea stradă
-    auto v = std::make_shared<Masina>(Coordonate{100, 0}, Sens::Sus, Sens::Sus, Strada1, 70);
-    auto v2 = std::make_shared<Autobuz>(Coordonate{100, 0}, Sens::Sus, Sens::Sus, Strada1, 70);
-    auto v3 = std::make_shared<VehiculPrioritar>(Coordonate{100, 0}, Sens::Sus, Sens::Sus, Strada1, 70);
-    auto x = std::make_shared<Autobuz> (Coordonate{100, ::MAX_WIDTH}, Sens::Jos, Sens::Jos, Strada1, 70, 0);
-
-    // Vector de vehicule
-    std::vector<std::shared_ptr<Vehicul>> vehicule = {v, v2, v3, x};
-
-    // Testează rularea
-    //v->ruleaza(vehicule, 800, 600);
-
-    // Configurează simulatorul
-    for (auto& x: vehicule)
-        sim.adaugaVehicul(x);
-
-    for (auto& x: strazi)
-        sim.adaugaStrada(x);
-
-    for (auto& x: intersectii)
-        sim.adaugaIntersectie(x);
-
-    for (auto& x: semafoare)
-        sim.adaugaSemafoare(x);
-
-
-    // Rulare simulare: 20 pași, câte 0.5 secunde fiecare
-    // sim.simuleazaTimp(50, 0.5);
-    //
-    std::cout << sim.getVehicule().size() << '\n';
-    std::cout << "Nr. strazi in Simulator: " << sim.getStrazi().size() << "\n";
-    std::cout << "Nr. vehicule in Simulator: " << sim.getVehicule().size() << "\n";
-    std::cout << "Nr. semafoare in Simulator: " << sim.getSemafoare().size() << "\n";
-    std::cout << "Nr. intersectii in Simulator: " << sim.getIntersectii().size() << "\n";
-
-    SimulatorGrafica grafica(sim, 1000, 1000);
-    grafica.ruleaza();
     return 0;
 }

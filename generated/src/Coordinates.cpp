@@ -1,5 +1,5 @@
 // NU MAI TREBUIE
-// #include "Coordonate.h"
+// #include "Coordinates.h"
 //
 //
 // //constructor
