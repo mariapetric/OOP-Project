@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.26)
+<<<<<<< HEAD
 
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing executable name in this file
 # for now, the project name is used as the executable name
@@ -10,6 +11,9 @@ project(${MAIN_PROJECT_NAME})
 # set(CMAKE_PROJECT_VERSION_MAJOR 0)
 # set(CMAKE_PROJECT_VERSION_MINOR 0)
 # set(CMAKE_PROJECT_VERSION_PATCH 1)
+=======
+project(oop)
+>>>>>>> b1914e9 (Commit)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,6 +23,7 @@ include(cmake/Options.cmake)
 include(cmake/CompilerFlags.cmake)
 include(cmake/CopyHelper.cmake)
 
+<<<<<<< HEAD
 ###############################################################################
 
 # external dependencies with FetchContent
@@ -57,6 +62,17 @@ endif()
 
 # NOTE: update executable name in .github/workflows/cmake.yml:25 when changing name here
 add_executable(${MAIN_EXECUTABLE_NAME}
+=======
+# If building on Windows and you installed SFML somewhere custom, only then set SFML_DIR.
+if(WIN32)
+    # Change this to wherever you keep SFML on your dev machine:
+    set(SFML_DIR "C:/Libraries/SFML-2.5.1/lib/cmake/SFML")
+endif()
+
+find_package(SFML 2.5 REQUIRED COMPONENTS graphics window system)
+
+add_executable(oop
+>>>>>>> b1914e9 (Commit)
         main.cpp
         generated/src/Helper.cpp
         generated/src/Street.cpp
@@ -77,6 +93,7 @@ add_executable(${MAIN_EXECUTABLE_NAME}
         generated/src/GraphicSimulator.cpp
 )
 
+<<<<<<< HEAD
 # NOTE: Add all defined targets (e.g. executables, libraries, etc. )
 # NOTE: RUN_SANITIZERS is optional, if it's not present it will default to true
 set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES ${MAIN_EXECUTABLE_NAME})
@@ -103,10 +120,20 @@ endif()
 # copy binaries to "bin" folder; these are uploaded as artifacts on each release
 # DESTINATION_DIR is set as "bin" in cmake/Options.cmake:6
 install(TARGETS ${MAIN_EXECUTABLE_NAME} DESTINATION ${DESTINATION_DIR})
+=======
+target_link_libraries(oop PRIVATE sfml-graphics sfml-window sfml-system)
+
+set_compiler_flags(RUN_SANITIZERS TRUE TARGET_NAMES oop)
+
+target_include_directories(oop SYSTEM PRIVATE generated/include)
+
+install(TARGETS oop DESTINATION ${DESTINATION_DIR})
+>>>>>>> b1914e9 (Commit)
 if(APPLE)
     install(FILES launcher.command DESTINATION ${DESTINATION_DIR})
 endif()
 
+<<<<<<< HEAD
 # copy dependent DLLs to build dir
 # see https://en.sfml-dev.org/forums/index.php?topic=28580.0
 # remove this if not using audio or if using SFML 3
@@ -175,6 +202,9 @@ copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME ${MAIN_EXECUTABLE
 #endif()
 #
 #copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME oop)
+=======
+copy_files(FILES tastatura.txt COPY_TO_DESTINATION TARGET_NAME oop)
+>>>>>>> b1914e9 (Commit)
 
 
 #cmake_minimum_required(VERSION 3.26)

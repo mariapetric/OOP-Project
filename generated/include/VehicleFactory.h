@@ -17,6 +17,10 @@ class VehicleFactory {
 public:
     static std::shared_ptr<Vehicle> createVehicle(
         VehicleType type,
+<<<<<<< HEAD
+=======
+        int id,
+>>>>>>> b1914e9 (Commit)
         const Coordinates<int>& pos,
         Orientation orientation,
         Orientation futureOrientation,

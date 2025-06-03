@@ -17,6 +17,7 @@ runs:
   using: "composite"
   steps:
     # Uncomment when using external dependencies, so they will be cached
+<<<<<<< HEAD
     - name: Cache deps
       uses: actions/cache@v4
       id: cache-deps
@@ -25,6 +26,16 @@ runs:
         path: |
           ${{ env.BUILD_DIR }}/_deps
         key: ${{ inputs.cache_key }}-${{ matrix.cmake_generator }}-${{ matrix.os }}-${{ matrix.cxx }}-${{ matrix.asan_name }}-${{ env.BUILD_TYPE }}-${{ env.SFML_VERSION }}
+=======
+    # - name: Cache deps
+    #   uses: actions/cache@v4
+    #   id: cache-deps
+    #   # make the key depend on the dependency version
+    #   with:
+    #     path: |
+    #       ${{ env.BUILD_DIR }}/_deps
+    #     key: ${{ inputs.cache_key }}-${{ matrix.cmake_generator }}-${{ matrix.os }}-${{ matrix.cxx }}-${{ matrix.asan_name }}-${{ env.BUILD_TYPE }}
+>>>>>>> b1914e9 (Commit)
 
     # NOTE: GH Actions does not allow updating the cache yet
     # Using the workaround found here: https://github.com/actions/cache/issues/171
