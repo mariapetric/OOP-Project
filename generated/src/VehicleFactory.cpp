@@ -3,7 +3,6 @@
 
 std::shared_ptr<Vehicle> VehicleFactory::createVehicle(
     VehicleType type,
-    int id,
     const Coordinates<int>& pos,
     Orientation orientation,
     Orientation futureOrientation,
